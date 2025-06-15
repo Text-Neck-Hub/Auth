@@ -24,6 +24,7 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
+    'allauth.socialaccount.providers.kakao',
     'channels'
 ]
 
@@ -90,7 +91,6 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -117,6 +117,15 @@ SOCIALACCOUNT_PROVIDERS = {
         'AUTH_PARAMS': {
             'access_type': 'online',
         },
+        'OAUTH_PKCE_ENABLED': True,
+        'FETCH_USERINFO': True,
+    },
+    'kakao': {
+        'SCOPE': [
+            'profile_nickname',
+            'account_email',
+        ],
+        'AUTH_PARAMS': {},
         'OAUTH_PKCE_ENABLED': True,
         'FETCH_USERINFO': True,
     }
