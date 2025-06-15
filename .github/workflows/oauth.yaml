@@ -41,11 +41,11 @@ jobs:
       - name: Install uv
         run: pip install uv
 
-      - name: Install dependencies
-        run: uv pip install -r requirements.txt || uv pip install .
+      - name: Install dependencies (pyproject.toml)
+        run: uv pip install --system .
 
       - name: Install dev dependencies
-        run: uv pip install --dev pytest pytest-django pytest-cov
+        run: uv pip install --system --dev pytest pytest-django pytest-cov
 
       - name: Run migrations
         run: uv run python manage.py migrate
