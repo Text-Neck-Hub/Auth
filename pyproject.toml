@@ -18,9 +18,6 @@ dependencies = [
     "uvicorn>=0.34.3",
 ]
 
-[tool.setuptools]
-packages = ["config", "oauth"]
-
 [tool.setuptools.packages.find]
 include = ["config*", "oauth*"]
 
