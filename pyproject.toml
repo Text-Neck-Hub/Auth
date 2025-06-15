@@ -29,4 +29,5 @@ python_files = ["test_*.py", "*_test.py", "tests.py"]
 dev = [
     "pytest>=8.4.0",
     "pytest-django",
+    "pytest-cov",
 ]
