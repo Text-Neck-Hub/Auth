@@ -45,7 +45,7 @@ jobs:
         run: uv pip install --system .
 
       - name: Install dev dependencies
-        run: uv pip install --system --dev pytest pytest-django pytest-cov
+        run: uv pip install --system --group dev
 
       - name: Run migrations
         run: uv run python manage.py migrate
