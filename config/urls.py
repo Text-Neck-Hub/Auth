@@ -6,7 +6,7 @@ from django.conf import settings
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('v1/callback', include('oauth.urls'), name='oauth'),
+    path('v1/callback/', include('oauth.urls'), name='oauth'),
     path('accounts/', include('allauth.urls')),
 ]
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

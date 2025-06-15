@@ -17,3 +17,13 @@ dependencies = [
     "requests>=2.32.4",
     "uvicorn>=0.34.3",
 ]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings.local"
+python_files = ["test_*.py", "*_test.py", "tests.py"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.4.0",
+    "pytest-django>=4.11.1",
+]
