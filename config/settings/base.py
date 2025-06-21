@@ -17,6 +17,7 @@ VANILA_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+    'django_prometheus',
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -33,6 +34,7 @@ LOCAL_APPS = ['oauth']
 INSTALLED_APPS = VANILA_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
 VANILA_MIDDLEWARE = [
+    'django_prometheus.middleware.PrometheusBeforeMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -45,7 +47,7 @@ THIRD_PARTY_MIDDLEWARE = ['corsheaders.middleware.CorsMiddleware',
                           'allauth.account.middleware.AccountMiddleware']
 MIDDLEWARE = VANILA_MIDDLEWARE + THIRD_PARTY_MIDDLEWARE
 
-ROOT_URLCONF = 'config.urls'
+
 
 TEMPLATES = [
     {
@@ -66,10 +68,11 @@ ASGI_APPLICATION = 'config.asgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
+        'ENGINE': 'django_prometheus.db.backends.sqlite3', # ✨ 여기! django_prometheus를 붙여줬어!
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -132,7 +135,7 @@ SOCIALACCOUNT_PROVIDERS = {
 }
 
 SOCIALACCOUNT_STORE_TOKENS = True
-
+ROOT_URLCONF = 'config.urls'
 LOGIN_REDIRECT_URL = '/v1/callback/google/'
 
 SITE_ID = 5

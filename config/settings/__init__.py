@@ -4,13 +4,14 @@ import os
 settings_module = os.environ.get(
     'DJANGO_SETTINGS_MODULE', 'config.settings.local')
 
-
 try:
     from importlib import import_module
-    settings_module_object = import_module(settings_module)
-
+    settings_module_object = import_module('settings_module')
+    
     for setting in dir(settings_module_object):
+        print(f"Loading setting: {setting}")
         if setting.isupper():
+            
             globals()[setting] = getattr(settings_module_object, setting)
 
 except ImportError as e:
