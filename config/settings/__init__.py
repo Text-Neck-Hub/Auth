@@ -1,6 +1,21 @@
-from .base import *
+import os
+
+
+settings_module = os.environ.get(
+    'DJANGO_SETTINGS_MODULE', 'config.settings.local')
+
 
 try:
-    from .local import *
-except ImportError:
-    pass
+    from importlib import import_module
+    settings_module_object = import_module(settings_module)
+
+    for setting in dir(settings_module_object):
+        if setting.isupper():
+            globals()[setting] = getattr(settings_module_object, setting)
+
+except ImportError as e:
+
+    raise ImportError(
+        f"Could not import settings '{settings_module}'. "
+        f"It isn't on your PYTHONPATH."
+    ) from e
