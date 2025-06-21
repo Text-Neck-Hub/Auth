@@ -21,6 +21,7 @@ dependencies = [
     { name = "djangorestframework-simplejwt" },
     { name = "requests" },
     { name = "uvicorn" },
+    { name = "uwsgi" },
 ]
 
 [package.dev-dependencies]
@@ -46,6 +47,7 @@ requires-dist = [
     { name = "djangorestframework-simplejwt", specifier = ">=5.5.0" },
     { name = "requests", specifier = ">=2.32.4" },
     { name = "uvicorn", specifier = ">=0.34.3" },
+    { name = "uwsgi", specifier = ">=2.0.30" },
 ]
 
 [package.metadata.requires-dev]
@@ -551,3 +553,9 @@ sdist = { url = "https://files.pythonhosted.org/packages/de/ad/713be230bcda622ea
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6d/0d/8adfeaa62945f90d19ddc461c55f4a50c258af7662d34b6a3d5d1f8646f6/uvicorn-0.34.3-py3-none-any.whl", hash = "sha256:16246631db62bdfbf069b0645177d6e8a77ba950cfedbfd093acef9444e4d885", size = 62431, upload-time = "2025-06-01T07:48:15.664Z" },
 ]
+
+[[package]]
+name = "uwsgi"
+version = "2.0.30"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/6f/f0/d794e9c7359f488b158e88c9e718c5600efdb74a0daf77331e5ffb6c87c4/uwsgi-2.0.30.tar.gz", hash = "sha256:c12aa652124f062ac216077da59f6d247bd7ef938234445881552e58afb1eb5f", size = 822560, upload-time = "2025-06-03T08:13:53.772Z" }

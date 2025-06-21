@@ -19,6 +19,7 @@ dependencies = [
     "djangorestframework-simplejwt>=5.5.0",
     "requests>=2.32.4",
     "uvicorn>=0.34.3",
+    "uwsgi>=2.0.30",
 ]
 
 [tool.setuptools.packages.find]
