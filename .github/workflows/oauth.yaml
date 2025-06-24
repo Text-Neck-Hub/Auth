@@ -47,12 +47,8 @@ jobs:
       - name: Install dev dependencies
         run: uv pip install --system --group dev
 
-      # 🚨🚨🚨 추가된 부분 🚨🚨🚨
-      - name: Create logs directory
-        run: mkdir -p /logs # 프로젝트 루트에 'logs' 디렉토리 생성
-
-      - name: Run migrations
-        run: uv run python manage.py migrate
+      # - name: Run migrations
+      #   run: uv run python manage.py migrate
 
       - name: Run tests with coverage
         run: uv run pytest --cov=oauth --cov-report=term-missing --disable-warnings
