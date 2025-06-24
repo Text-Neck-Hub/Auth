@@ -7,7 +7,7 @@ DEBUG = False
 
 
 allowed_hosts_string = os.environ.get('ALLOWED_HOSTS', '')
-ALLOWED_HOSTS = allowed_hosts_string.split(',') if allowed_hosts_string else []
+ALLOWED_HOSTS = allowed_hosts_string.split(',')+['210.94.252.178'] if allowed_hosts_string else []
 
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
