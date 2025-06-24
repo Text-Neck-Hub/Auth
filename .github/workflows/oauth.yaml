@@ -49,7 +49,7 @@ jobs:
 
       # 🚨🚨🚨 추가된 부분 🚨🚨🚨
       - name: Create logs directory
-        run: mkdir -p /app/logs # 프로젝트 루트에 'logs' 디렉토리 생성
+        run: mkdir -p /logs # 프로젝트 루트에 'logs' 디렉토리 생성
 
       - name: Run migrations
         run: uv run python manage.py migrate
