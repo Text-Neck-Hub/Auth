@@ -1,3 +1,4 @@
+# myapp/views.py
 from django.shortcuts import redirect
 from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
@@ -5,6 +6,10 @@ from django.views import View
 from allauth.socialaccount.models import SocialToken, SocialAccount
 from rest_framework_simplejwt.tokens import RefreshToken
 import logging
+from rest_framework.response import Response
+from rest_framework import status, permissions
+from django.conf import settings
+
 logger = logging.getLogger('prod')
 
 class SocialOAuthCallbackView(View):
@@ -14,14 +19,12 @@ class SocialOAuthCallbackView(View):
     def dispatch(self, *args, **kwargs):
         return super().dispatch(*args, **kwargs)
 
-    def get_callback_url(self, success=True, **kwargs):
+    def get_callback_url(self, success=True, error=None):
         base_url = "https://www.textneckhub.p-e.kr/login/callback/"
-        logger.info(f"Redirecting to {base_url} with success={success} and kwargs={kwargs}")
         if success:
-            params = f"?access_token={kwargs.get('access_token')}&refresh_token={kwargs.get('refresh_token')}"
+            return f"{base_url}?status=success"
         else:
-            params = f"?error={kwargs.get('error')}"
-        return base_url + params
+            return f"{base_url}?status=error&message={error}"
 
     def get(self, request):
         user = request.user
@@ -41,27 +44,46 @@ class SocialOAuthCallbackView(View):
             refresh = RefreshToken.for_user(user)
             access_token = str(refresh.access_token)
             refresh_token = str(refresh)
-            return redirect(self.get_callback_url(
-                success=True,
-                access_token=access_token,
-                refresh_token=refresh_token
-            ))
+
+            response_data = {
+                'access': access_token,
+                'user_info': {
+                    'email': user.email,
+                    'name': user.first_name,
+                },
+                "message": "소셜 로그인 성공! 🤩"
+            }
+            response = Response(response_data, status=status.HTTP_200_OK)
+
+            refresh_token_lifetime = settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()
+
+            response.set_cookie(
+                key='refresh_token',
+                value=refresh_token,
+                httponly=True,
+                secure=settings.DEBUG is False,
+                samesite='None',
+                max_age=int(refresh_token_lifetime)
+            )
+
+            return response
+
         else:
             logger.error(f"No SocialToken found for SocialAccount {social_account.uid} with provider {self.provider}")
             return redirect(self.get_callback_url(success=False, error=f"No{self.provider.capitalize()}TokenFound"))
 
 
 class GoogleOAuthCallbackView(SocialOAuthCallbackView):
-    provider = "Google"
+    provider = "google"
 
 
 class KakaoOAuthCallbackView(SocialOAuthCallbackView):
-    provider = "Kakao"
+    provider = "kakao"
 
 
 class NaverOAuthCallbackView(SocialOAuthCallbackView):
-    provider = "Naver"
+    provider = "naver"
 
 
 class GithubOAuthCallbackView(SocialOAuthCallbackView):
-    provider = "Github"
+    provider = "github"
