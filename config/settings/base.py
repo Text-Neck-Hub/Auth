@@ -126,7 +126,7 @@ THIRD_PARTY_APPS = [
     'channels'
 ]
 
-LOCAL_APPS = ['oauth', 'cert']
+LOCAL_APPS = ['authentication']
 
 INSTALLED_APPS = VANILA_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
