@@ -9,89 +9,83 @@ SECRET_KEY = 'django-insecure-tbuqcb4-2$t-l&@qs_if)y4v&opr9bdlbvu#-*m)r8hca*$nle
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
-# 💖 네가 만든 ColoredFormatter는 그대로 사용! 💖
-
 
 class ColoredFormatter(logging.Formatter):
     COLORS = {
-        "DEBUG": "\033[94m",  # Blue
-        "INFO": "\033[92m",  # Green
-        "WARNING": "\033[93m",  # Yellow
-        "ERROR": "\033[91m",  # Red
-        "CRITICAL": "\033[41m",  # Red background
+        "DEBUG": "\033[94m",
+        "INFO": "\033[92m",
+        "WARNING": "\033[93m",
+        "ERROR": "\033[91m",
+        "CRITICAL": "\033[41m",
     }
     RESET = "\033[0m"
 
     def format(self, record):
         log_color = self.COLORS.get(record.levelname, self.RESET)
-        # super().format(record)는 포매터에 정의된 'format' 문자열을 사용해!
         return f"{log_color}{super().format(record)}{self.RESET}"
 
 
 LOGGING = {
     "version": 1,
-    "disable_existing_loggers": False,  # 기존 로거 비활성화 안 함!
+    "disable_existing_loggers": False,
 
     "formatters": {
-        "colored": {  # 💖 콘솔 출력을 위한 색상 포매터! 💖
+        "colored": {
             "()": ColoredFormatter,
-            # ColoredFormatter가 사용할 기본 형식
             "format": "{levelname} {asctime} {module} {message}",
             "style": "{",
         },
-        "verbose": {  # 💖 파일 저장을 위한 상세 포매터! 💖
+        "verbose": {
             "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
             "style": "{",
         },
-        "simple": {  # 💖 간단한 포매터 (필요시 사용)! 💖
+        "simple": {
             "format": "{levelname} {message}",
             "style": "{",
         },
     },
 
     "handlers": {
-        "console": {  # 💖 콘솔 출력 핸들러! 💖
+        "console": {
             "class": "logging.StreamHandler",
-            "formatter": "colored",  # 색상 포매터 적용!
-            "level": "DEBUG",  # 개발 시에는 DEBUG 레벨까지 모두 출력!
+            "formatter": "colored",
+            "level": "DEBUG",
         },
-        "file": {  # 💖 일반 로그 파일 핸들러 (RotatingFileHandler로 변경)! 💖
-            "class": "logging.handlers.RotatingFileHandler",  # 파일 크기 제한 및 자동 로테이션!
-            # 💖 컨테이너 내부 경로! 💖
-            "filename": os.path.join('/app/logs', 'debug.log'),
-            "maxBytes": 1024 * 1024 * 5,  # 5MB
-            "backupCount": 5,  # 최대 5개까지 백업 파일 유지
-            "formatter": "verbose",
-            "level": "INFO",  # 파일에는 INFO 레벨 이상만 저장하는 게 일반적이야!
-        },
-        "error_file": {  # 💖 에러 로그 전용 파일 핸들러 추가! 💖
+        "file": {
             "class": "logging.handlers.RotatingFileHandler",
-            # 💖 컨테이너 내부 경로! 💖
+            "filename": os.path.join('/app/logs', 'debug.log'),
+            "maxBytes": 1024 * 1024 * 5,
+            "backupCount": 5,
+            "formatter": "verbose",
+            "level": "INFO",
+        },
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
             "filename": os.path.join('/app/logs', 'error.log'),
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "verbose",
-            "level": "ERROR",  # ERROR 레벨 이상만 저장!
+            "level": "ERROR",
         },
     },
 
     "loggers": {
-        "prod": {  # 💖 네 프로젝트/앱 로거! 💖
-            "handlers": ["console", "file", "error_file"],  # 모든 핸들러 연결!
-            "level": "DEBUG",  # 개발 시에는 DEBUG 레벨까지 모두 로깅!
-            "propagate": False,  # 💖 상위 로거로 전파하지 않음 (중복 방지)! 💖
+        "prod": {
+            "handlers": ["console", "file", "error_file"],
+            "level": "DEBUG",
+            "propagate": False,
         },
-        "django": {  # 💖 장고 프레임워크 자체 로거! 💖
+        "django": {
             "handlers": ["console", "file", "error_file"],
             "level": "INFO",
             "propagate": False,
         },
-        "django.request": {  # 💖 HTTP 요청 관련 로거 (404, 500 에러 등)! 💖
-            "handlers": ["console", "error_file"],  # 콘솔과 에러 파일로!
-            "level": "ERROR",  # ERROR 레벨 이상만 처리!
+        "django.request": {
+            "handlers": ["console", "error_file"],
+            "level": "ERROR",
             "propagate": False,
         },
-        # 💖 써드파티 앱 로거 (필요시 추가)! 💖
+
         # 'allauth': {
         #     'handlers': ['console', 'file'],
         #     'level': 'INFO',
@@ -102,11 +96,10 @@ LOGGING = {
         #     'level': 'INFO',
         #     'propagate': False,
         # },
-        "": {  # 💖 루트 로거 (모든 로거의 부모)! 💖
-            "handlers": ["console", "file"],  # 콘솔과 일반 파일로!
-            "level": "INFO",  # INFO 레벨 이상 모든 로그 처리!
-            "propagate": False,  # 루트 로거는 보통 propagate를 False로 두지 않아!
-            # 하지만 명시적으로 핸들러를 연결했으니 괜찮아!
+        "": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": False,
         },
     },
 }
@@ -171,7 +164,6 @@ ASGI_APPLICATION = 'config.asgi.application'
 
 DATABASES = {
     'default': {
-        # ✨ 여기! django_prometheus를 붙여줬어!
         'ENGINE': 'django_prometheus.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
@@ -209,21 +201,23 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5), # 액세스 토큰 유효 기간 (짧게!)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1), # 리프레시 토큰 유효 기간 (길게!)
-    'ROTATE_REFRESH_TOKENS': False, # 리프레시 토큰 갱신 시 새 리프레시 토큰 발급 여부 (보안상 True 권장)
-    'BLACKLIST_AFTER_ROTATION': False, # 리프레시 토큰 갱신 시 이전 토큰 블랙리스트 처리 여부 (보안상 True 권장)
-    'UPDATE_LAST_LOGIN': False, # 마지막 로그인 시간 업데이트 여부
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+
+    'ROTATE_REFRESH_TOKENS': False,
+
+    'BLACKLIST_AFTER_ROTATION': False,
+    'UPDATE_LAST_LOGIN': False,
 
     'ALGORITHM': 'HS256',
-    'SIGNING_KEY': SECRET_KEY, # Django SECRET_KEY 사용
+    'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
     'AUDIENCE': None,
     'ISSUER': None,
     'JWK_URL': None,
     'LEEWAY': 0,
 
-    'AUTH_HEADER_TYPES': ('Bearer',), # 인증 헤더 타입
+    'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
     'USER_ID_FIELD': 'id',
     'USER_ID_CLAIM': 'user_id',
@@ -264,7 +258,9 @@ SOCIALACCOUNT_PROVIDERS = {
 
 SOCIALACCOUNT_STORE_TOKENS = True
 ROOT_URLCONF = 'config.urls'
-LOGIN_REDIRECT_URL = '/v2/callback/google/'
+
+SOCIALACCOUNT_LOGIN_REDIRECT_URL = 'https://www.textneckhub.p-e.kr/auth/callback/'
+
 
 SITE_ID = 7
 LANGUAGE_CODE = 'en-us'
