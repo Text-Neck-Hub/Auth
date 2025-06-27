@@ -259,7 +259,7 @@ SOCIALACCOUNT_PROVIDERS = {
 SOCIALACCOUNT_STORE_TOKENS = True
 ROOT_URLCONF = 'config.urls'
 
-SOCIALACCOUNT_LOGIN_REDIRECT_URL = 'https://www.textneckhub.p-e.kr/auth/callback/'
+
 
 
 SITE_ID = 7

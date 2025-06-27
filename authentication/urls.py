@@ -5,12 +5,12 @@ urlpatterns = [
     path('access-token/', views.AccessTokenObtainView.as_view(),
          name='access_token_obtain'),
 
-    path('verify/', views.AccessTokenVerificationView.as_view(),
+    path('access-token/verify/', views.AccessTokenVerificationView.as_view(),
          name='access_token_verify'),
 
-    path('refresh/', views.AccessTokenRefreshView.as_view(),
+    path('access-token/refresh/', views.AccessTokenRefreshView.as_view(),
          name='access_token_refresh'),
 
-    path('revoke/', views.RefreshTokenRevokeView.as_view(),
+    path('refresh-token/revoke/', views.RefreshTokenRevokeView.as_view(),
          name='refresh_token_revoke'),
 ]

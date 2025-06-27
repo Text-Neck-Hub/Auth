@@ -27,8 +27,9 @@ DATABASES = {
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
+LOGIN_REDIRECT_URL='https://www.textneckhub.p-e.kr/auth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
 
 SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
