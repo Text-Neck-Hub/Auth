@@ -58,6 +58,7 @@ class AccessTokenObtainView(APIView):
             },
             "message": "Social login successful! JWTs issued."
         }
+        logger.info(f"🎄Final response_data before sending🎆: {response_data}")
         logger.info(f"JWTs issued for user {user.username} ({user.id}). Access token: {access_token[:10]}... Refresh token: {refresh_token[:10]}...")
         response = Response(response_data, status=status.HTTP_200_OK)
 
