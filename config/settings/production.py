@@ -30,8 +30,19 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 LOGIN_REDIRECT_URL='https://www.textneckhub.p-e.kr/auth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True
+CSRF_COOKIE_DOMAIN = ".textneckhub.p-e.kr"
+SESSION_COOKIE_DOMAIN = ".textneckhub.p-e.kr" # 세션 쿠키도 함께 설정
+
+# 3. Secure Cookie 설정 (HTTPS 환경이라면 필수!)
+# 프로덕션 환경에서는 반드시 True로 설정해야 해!
+CSRF_COOKIE_SECURE = True
 
 SESSION_COOKIE_SECURE = True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
+CSRF_TRUSTED_ORIGINS = [
+    "https://www.textneckhub.p-e.kr",
+    "https://textneckhub.p-e.kr",
+    "https://api.textneckhub.p-e.kr",
+]

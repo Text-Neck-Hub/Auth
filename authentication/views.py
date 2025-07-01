@@ -14,7 +14,7 @@ from django.conf import settings
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.views import APIView
-
+from rest_framework_simplejwt.settings import api_settings
 
 logger = logging.getLogger('prod')
 
@@ -226,11 +226,10 @@ class AccessTokenVerificationView(APIView):
 
 
 class RefreshTokenRevokeView(APIView):
-
     permission_classes = [permissions.IsAuthenticated]
 
-    def post(self, request):
-        refresh_token_value = request.data.get('refresh_token')
+    def delete(self, request):
+        refresh_token_value = request.COOKIES.get('refresh_token')
 
         if not refresh_token_value:
             return Response(
@@ -239,14 +238,21 @@ class RefreshTokenRevokeView(APIView):
             )
 
         try:
+            # 1. 리프레시 토큰 문자열에서 JTI 추출 (가장 중요! ✨)
+            # simple_jwt의 RefreshToken 클래스를 사용하면 토큰 문자열을 파싱하고 클레임에 접근할 수 있어.
+            token = RefreshToken(refresh_token_value)
+            jti = token[api_settings.JTI_CLAIM] # settings에서 JTI 클레임 이름 가져오기
 
             user_id_from_token = request.user.id
-            redis_key = f"refresh_token:{user_id_from_token}"
+            
+            # 2. Redis 키를 로그인 시 저장한 키와 동일하게 구성! ✨
+            redis_key = f"refresh_token:{user_id_from_token}:{jti}" 
+            
             deleted_count = cache.delete(redis_key)
 
             if deleted_count == 0:
                 logger.warning(
-                    f"Attempted to revoke non-existent or already revoked refresh token in Redis for user {user_id_from_token}.")
+                    f"Attempted to revoke non-existent or already revoked refresh token in Redis for user {user_id_from_token} with JTI {jti}. Key attempted: {redis_key}")
                 return Response(
                     {"error": "Refresh token not found or already revoked."},
                     status=status.HTTP_400_BAD_REQUEST
@@ -258,12 +264,12 @@ class RefreshTokenRevokeView(APIView):
             )
             response.delete_cookie('refresh_token')
             logger.info(
-                f"Refresh token revoked for user {user_id_from_token} from Redis and cookie.")
+                f"Refresh token revoked for user {user_id_from_token} with JTI {jti} from Redis and cookie. Key: {redis_key}")
             return response
 
         except Exception as e:
             logger.error(
-                f"Error revoking refresh token for user {request.user.id}: {e}")
+                f"Error revoking refresh token for user {request.user.id}: {e}", exc_info=True) # exc_info=True로 하면 스택 트레이스도 로깅돼서 디버깅에 도움돼!
             return Response(
                 {"error": "An error occurred during token revocation."},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
