@@ -6,7 +6,7 @@ settings_module = os.environ.get(
 
 try:
     from importlib import import_module
-    settings_module_object = import_module('config.settings.local')
+    settings_module_object = import_module('config.settings.production')
     
     for setting in dir(settings_module_object):
         print(f"Loading setting: {setting}")

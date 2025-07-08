@@ -7,7 +7,7 @@ from datetime import timedelta
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-SECRET_KEY = 'django-insecure-tbuqcb4-2$t-l&@qs_if)y4v&opr9bdlbvu#-*m)r8hca*$nle'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 
@@ -215,36 +215,54 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 
-    'ROTATE_REFRESH_TOKENS': True,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 5))),
 
-    'BLACKLIST_AFTER_ROTATION': True,
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 1))),
+
+
+    'ROTATE_REFRESH_TOKENS': os.environ.get('JWT_ROTATE_REFRESH_TOKENS', 'True').lower() == 'true',
+
+    'BLACKLIST_AFTER_ROTATION': os.environ.get('JWT_BLACKLIST_AFTER_ROTATION', 'True').lower() == 'true',
     'UPDATE_LAST_LOGIN': False,
 
-    'ALGORITHM': 'HS256',
+
+    'ALGORITHM': os.environ.get('JWT_ALGORITHM', 'HS256'),
+
     'SIGNING_KEY': SECRET_KEY,
     'VERIFYING_KEY': None,
-    'AUDIENCE': None,
-    'ISSUER': None,
+
+
+    'AUDIENCE': os.environ.get('JWT_AUDIENCE', None),
+    'ISSUER': os.environ.get('JWT_ISSUER', None),
     'JWK_URL': None,
     'LEEWAY': 0,
 
-    'AUTH_HEADER_TYPES': ('Bearer',),
+
+    'AUTH_HEADER_TYPES': (os.environ.get('JWT_AUTH_HEADER_TYPE', 'Bearer'),),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
-    'USER_ID_CLAIM': 'user_id',
+
+
+    'USER_ID_CLAIM': os.environ.get('JWT_USER_ID_CLAIM', 'user_id'),
+
+    'USER_ID_FIELD': os.environ.get('JWT_USER_ID_FIELD', 'id'),
+
+
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
 
+
     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+
     'TOKEN_TYPE_CLAIM': 'token_type',
+
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
 
-    'JTI_CLAIM': 'jti',  # 이 클레임이 각 토큰을 고유하게 식별하는 데 사용됨
 
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=5),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+    'JTI_CLAIM': os.environ.get('JWT_JTI_CLAIM', 'jti'),
+
+
+    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_SLIDING_TOKEN_LIFETIME_MINUTES', 5))),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=int(os.environ.get('JWT_SLIDING_TOKEN_REFRESH_LIFETIME_DAYS', 1))),
 }
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -274,17 +292,17 @@ SOCIALACCOUNT_STORE_TOKENS = True
 ROOT_URLCONF = 'config.urls'
 
 
-SITE_ID = 7
+SITE_ID = 9
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'static'
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = True
+STATIC_URL = '/static/'
+STATIC_ROOT = '/app/collected_static_auth/'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = '/app/uploaded_media_auth/'
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 CACHES = {
