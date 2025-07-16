@@ -43,6 +43,6 @@ CORS_ALLOWED_ORIGINS = [
     "https://www.textneckhub.p-e.kr",
 ]
 CORS_ALLOW_CREDENTIALS = True
-
+SOCIALACCOUNT_ADAPTER = 'authentication.adapters.SocialAccountAdapter'
 USE_X_FORWARDED_HOST = True
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
