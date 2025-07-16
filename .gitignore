@@ -192,3 +192,11 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
+
+collected_static_auth/
+logs/
+uploaded_media_auth/
+.pytest_cache/
+.venv/
+db.sqlite3
+static/

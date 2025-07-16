@@ -1,4 +1,4 @@
-import os  # os 모듈 임포트 확인
+import os
 
 import logging
 from pathlib import Path
@@ -10,8 +10,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 SECRET_KEY = os.environ.get('SECRET_KEY')
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
-
-# settings.py
 
 
 class ColoredFormatter(logging.Formatter):
@@ -26,9 +24,7 @@ class ColoredFormatter(logging.Formatter):
 
     def format(self, record):
         log_color = self.COLORS.get(record.levelname, self.RESET)
-        # asctime, module, message를 포함하도록 format string 수정
-        # record.getMessage()는 메시지 인자를 포맷팅하여 반환
-        message = super().format(record)  # 기본 포맷팅된 메시지 가져오기
+        message = super().format(record)
         return f"{log_color}{message}{self.RESET}"
 
 
@@ -39,7 +35,6 @@ LOGGING = {
     "formatters": {
         "colored": {
             "()": ColoredFormatter,
-            # message를 {message}로 변경
             "format": "{levelname} {asctime} {module} {message}",
             "style": "{",
         },
@@ -57,7 +52,7 @@ LOGGING = {
         "console": {
             "class": "logging.StreamHandler",
             "formatter": "colored",
-            "level": "DEBUG",  # 콘솔에는 DEBUG 레벨부터 모두 출력
+            "level": "DEBUG",
         },
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
@@ -65,7 +60,7 @@ LOGGING = {
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "verbose",
-            "level": "DEBUG",  # 파일에는 DEBUG 레벨부터 모두 출력 (info 포함)
+            "level": "DEBUG",
         },
         "error_file": {
             "class": "logging.handlers.RotatingFileHandler",
@@ -73,45 +68,39 @@ LOGGING = {
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "verbose",
-            "level": "ERROR",  # 에러 파일에는 ERROR 레벨만 출력 (이건 그대로 유지)
+            "level": "ERROR",
         },
     },
 
     "loggers": {
-        # 'prod' 로거: 네 애플리케이션 코드에서 사용하는 주 로거
         "prod": {
-            "handlers": ["console", "file", "error_file"],  # 모든 핸들러 연결
-            "level": "INFO",  # INFO 레벨부터 로그를 처리 (DEBUG는 너무 많을 수 있음)
-            "propagate": False,  # 상위 로거로 전달 안 함
+            "handlers": ["console", "file", "error_file"],
+            "level": "INFO",
+            "propagate": False,
         },
-        # 'django' 로거: Django 프레임워크 자체의 로그
         "django": {
             "handlers": ["console", "file", "error_file"],
-            "level": "INFO",  # Django 로그는 INFO 레벨부터 (기본 권장)
+            "level": "INFO",
             "propagate": False,
         },
-        # 'django.request' 로거: HTTP 요청/응답 관련 로그
         "django.request": {
-            "handlers": ["console", "error_file"],  # console과 error_file에만
-            "level": "INFO",  # 요청 로그도 INFO 레벨부터 (기존 ERROR에서 변경)
+            "handlers": ["console", "error_file"],
+            "level": "INFO",
             "propagate": False,
         },
-        # 'allauth' 로거: django-allauth 라이브러리 로그
         'allauth': {
             'handlers': ['console', 'file'],
-            'level': 'INFO',  # allauth 로그는 INFO 레벨부터
+            'level': 'INFO',
             'propagate': False,
         },
-        # 'django_prometheus' 로거: Prometheus 관련 로그
         'django_prometheus': {
             'handlers': ['console', 'file'],
             'level': 'INFO',
             'propagate': False,
         },
-        # 루트 로거: 명시적으로 설정되지 않은 모든 로거의 상위
         "": {
             "handlers": ["console", "file"],
-            "level": "WARNING",  # 루트 로거는 WARNING 레벨부터 (너무 많은 로그 방지)
+            "level": "WARNING",
             "propagate": False,
         },
     },
@@ -175,6 +164,7 @@ TEMPLATES = [
 ]
 
 ASGI_APPLICATION = 'config.asgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -277,15 +267,7 @@ SOCIALACCOUNT_PROVIDERS = {
         'OAUTH_PKCE_ENABLED': True,
         'FETCH_USERINFO': True,
     },
-    'kakao': {
-        'SCOPE': [
-            'profile_nickname',
-            'account_email',
-        ],
-        'AUTH_PARAMS': {},
-        'OAUTH_PKCE_ENABLED': True,
-        'FETCH_USERINFO': True,
-    }
+
 }
 
 SOCIALACCOUNT_STORE_TOKENS = True

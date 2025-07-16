@@ -2,7 +2,7 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('access-token/', views.GoogleAccessTokenObtainView.as_view(),
+    path('access-token/', views.AccessTokenObtainView.as_view(),
          name='access_token_obtain'),
 
     path('access-token/verify/', views.AccessTokenVerificationView.as_view(),
@@ -13,4 +13,5 @@ urlpatterns = [
 
     path('refresh-token/revoke/', views.RefreshTokenRevokeView.as_view(),
          name='refresh_token_revoke'),
+    path('profile/', views.UserProfileView.as_view(), name='user_profile'),
 ]
