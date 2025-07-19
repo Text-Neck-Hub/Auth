@@ -6,8 +6,8 @@ from django.contrib.auth.decorators import login_required
 from django.utils.decorators import method_decorator
 import logging
 
-from ..services.token_servies import SocialAuthService
-from ..services.token_servies import TokenRefreshService
+from ..services.access_token_service import SocialAuthService
+from ..services.access_token_service import TokenRefreshService
 
 
 logger = logging.getLogger('prod')
