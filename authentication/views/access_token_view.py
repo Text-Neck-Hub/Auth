@@ -1,31 +1,19 @@
-
-from django.core.cache import cache
-from allauth.socialaccount.models import SocialAccount
-from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework import status
-from rest_framework_simplejwt.views import TokenRefreshView
-import logging
-from django.core.cache import cache
-from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
-from django.conf import settings
-
 from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.views import APIView
+from rest_framework_simplejwt.views import TokenRefreshView
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+import logging
+
+from ..services.token_servies import SocialAuthService
+from ..services.token_servies import TokenRefreshService
 
 
 logger = logging.getLogger('prod')
 
-User = get_user_model()
-
-
-logger = logging.getLogger(__name__)
-
 
 class AccessTokenObtainView(APIView):
-
     permission_classes = [permissions.AllowAny]
 
     @method_decorator(login_required)
@@ -36,77 +24,32 @@ class AccessTokenObtainView(APIView):
         provider = request.session.get('provider', None)
 
         if not provider:
-            logger.error(
-                "No provider found in session. User might not be logged in via social account.")
+            logger.error("세션에 제공자를 찾을 수 없습니다. 사용자가 소셜 계정으로 로그인하지 않았을 수 있습니다.")
             return Response(
-                {"error": "No provider found in session. Please log in via a social account."},
+                {"error": "세션에 제공자를 찾을 수 없습니다. 소셜 계정으로 로그인해주세요."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         request.session.pop('provider')
+
         user = request.user
-        logger.info(
-            f"User: {user.username} ({user.id}) attempting social login token obtain for provider {self.provider}.")
-
-        social_account = SocialAccount.objects.filter(
-            user=user, provider=provider).first()
-
-        if not social_account:
-            logger.error(
-                f"No SocialAccount found for user {user.username} with provider {self.provider}")
-            return Response(
-                {"error": f"No SocialAccount found for {self.provider}. Please link your account first."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        logger.info(f"SocialAccount found: {social_account.uid}. Issuing JWT.")
-
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
-
-        response_data = {
-            'access': access_token,
-            'user_info': {
-                'email': user.email,
-                'name': user.first_name,
-            },
-            "message": "Social login successful! JWTs issued."
-        }
-
-        logger.info(
-            f"🎄Final response_data before sending🎆: Access token issued (starts with {access_token[:10]})...")
-        logger.info(
-            f"JWTs issued for user {user.username} ({user.id}). Access token: {access_token[:10]}... Refresh token: {refresh_token[:10]}...")
-        response = Response(response_data, status=status.HTTP_200_OK)
-
-        ttl_seconds = int(
-            settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
 
         try:
+            response_data, cookie_settings = SocialAuthService.obtain_jwt_for_social_user(
+                user, provider)
 
-            jti = refresh['jti']
-        except KeyError:
-            logger.error(
-                f"JTI claim not found in refresh token for user {user.id}.")
-            return Response({"error": "Failed to process token (JTI missing)."}, status=status.HTTP_500_INTERNAL_ERROR)
+            response = Response(response_data, status=status.HTTP_200_OK)
+            response.set_cookie(**cookie_settings)
+            logger.info(f"성공적으로 JWT 응답 및 쿠키 설정 완료 (사용자 ID: {user.id})")
+            return response
 
-        key = f"refresh_token:{user.id}:{jti}"
-
-        cache.set(key, refresh_token, timeout=ttl_seconds)
-        logger.info(
-            f"✅ Redis에 사용자 {user.id}의 새 리프레시 토큰 저장 완료! 키: {key}, JTI: {jti}, TTL: {ttl_seconds}초")
-
-        response.set_cookie(
-            key='refresh_token',
-            value=refresh_token,
-            httponly=True,
-            secure=settings.DEBUG is False,
-            samesite='Lax',
-            max_age=ttl_seconds
-        )
-
-        return response
+        except ValueError as e:
+            logger.error(f"소셜 로그인 토큰 발급 중 오류 발생: {e}")
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.critical(
+                f"예상치 못한 심각한 오류 발생 (유저 ID: {user.id}): {e}", exc_info=True)
+            return Response({"error": "내부 서버 오류가 발생했습니다."}, status=status.HTTP_500_INTERNAL_ERROR)
 
 
 class AccessTokenRefreshView(TokenRefreshView):
@@ -114,23 +57,11 @@ class AccessTokenRefreshView(TokenRefreshView):
         refresh_token_from_cookie = request.COOKIES.get('refresh_token')
 
         if refresh_token_from_cookie is None:
-            logger.warning(
-                "Refresh token not found in cookies during refresh attempt.")
+            logger.warning("쿠키에서 리프레시 토큰을 찾을 수 없습니다. 토큰 갱신 시도 실패.")
             return Response(
-                {"detail": "Refresh token not found in cookies."},
+                {"detail": "쿠키에서 리프re시 토큰을 찾을 수 없습니다."},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
-        old_refresh_token_jti = None
-        user_id = None
-        try:
-            old_refresh_token_obj = RefreshToken(refresh_token_from_cookie)
-            old_refresh_token_jti = old_refresh_token_obj['jti']
-            user_id = old_refresh_token_obj.get(
-                settings.SIMPLE_JWT['USER_ID_CLAIM'])
-        except Exception as e:
-            logger.error(
-                f"Error extracting JTI or user_id from old refresh token in cookie: {e}")
 
         mutable_data = request.data.copy()
         mutable_data['refresh'] = refresh_token_from_cookie
@@ -139,51 +70,24 @@ class AccessTokenRefreshView(TokenRefreshView):
         response = super().post(request, *args, **kwargs)
 
         if response.status_code == status.HTTP_200_OK:
-            new_access_token = response.data.get('access')
-
             new_refresh_token = response.data.get('refresh')
 
-            if user_id and old_refresh_token_jti:
-
-                old_redis_key = f"refresh_token:{user_id}:{old_refresh_token_jti}"
-                cache.delete(old_redis_key)
-                logger.info(f"✅ Redis에서 이전 리프레시 토큰 삭제 완료! 키: {old_redis_key}")
-            else:
-                logger.warning(
-                    "Could not determine user ID or old JTI to delete previous refresh token from Redis.")
-
-            if user_id and new_refresh_token:
+            if new_refresh_token:
                 try:
-                    new_refresh_token_obj = RefreshToken(new_refresh_token)
-                    new_jti = new_refresh_token_obj['jti']
+                    cookie_settings = TokenRefreshService.manage_refreshed_tokens_in_cache_and_cookies(
+                        refresh_token_from_cookie,
+                        new_refresh_token
+                    )
+                    response.set_cookie(**cookie_settings)
+                    logger.info("클라이언트 쿠키에 새로운 리프레시 토큰 설정 완료.")
+                except ValueError as e:
+                    logger.error(f"토큰 갱신 후 처리 오류: {e}")
+                    return Response({"detail": f"토큰 처리 중 오류가 발생했습니다: {e}"}, status=status.HTTP_500_INTERNAL_ERROR)
                 except Exception as e:
-                    logger.error(
-                        f"Error extracting JTI from new refresh token: {e}")
-
-                    logger.warning(
-                        "Failed to process new refresh token for Redis/cookie update. User might need to re-login.")
-                    return response
-
-                ttl_seconds = int(
-                    settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds())
-
-                new_redis_key = f"refresh_token:{user_id}:{new_jti}"
-                cache.set(new_redis_key, new_refresh_token,
-                          timeout=ttl_seconds)
-                logger.info(
-                    f"✅ Redis에 사용자 {user_id}의 새 리프레시 토큰 저장 완료! 키: {new_redis_key}, JTI: {new_jti}")
-
-                response.set_cookie(
-                    key='refresh_token',
-                    value=new_refresh_token,
-                    httponly=True,
-                    secure=settings.DEBUG is False,
-                    samesite='Lax',
-                    max_age=ttl_seconds
-                )
-                logger.info(f"✅ 클라이언트 쿠키에 새로운 리프레시 토큰 설정 완료.")
+                    logger.critical(
+                        f"토큰 갱신 후 처리 중 예상치 못한 심각한 오류 발생: {e}", exc_info=True)
+                    return Response({"detail": "내부 서버 오류가 발생했습니다."}, status=status.HTTP_500_INTERNAL_ERROR)
             else:
-                logger.warning(
-                    "Could not determine user ID or new refresh token for Redis/cookie update.")
+                logger.warning("새 리프레시 토큰을 응답에서 찾을 수 없어 Redis/쿠키 업데이트를 건너뜀.")
 
         return response
