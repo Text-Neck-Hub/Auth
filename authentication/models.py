@@ -7,6 +7,7 @@ class UserProfile(models.Model):
     name = models.CharField(max_length=255, blank=True, null=True)
     bio = models.URLField(blank=True, null=True)
     location = models.CharField(max_length=255, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
     profile_picture = models.ImageField(
         upload_to='profile_pictures/', blank=True, null=True)
 
