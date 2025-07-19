@@ -3,7 +3,7 @@ from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from allauth.account.signals import user_signed_up
+from allauth.account.signals import user_signed_up, user_logged_in
 from ..models import UserProfile
 import logging
 
@@ -73,8 +73,10 @@ def populate_user_profile_on_signup(request, user, **kwargs):
 
 
 @receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
+def save_user_profile(sender, instance, created, **kwargs):
     logger.debug(f"User 모델 저장 시그널 발생: 유저 ID {instance.id}")
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
     if hasattr(instance, 'profile'):
         instance.profile.save()
         logger.debug(f"연결된 UserProfile 저장됨: 유저 ID {instance.id}")

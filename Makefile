@@ -3,8 +3,8 @@
 run:
 	uv run uvicorn config.asgi:application --reload --host 0.0.0.0 --port 8001
 migrate:
-	uv run python manage.py migrate
 	uv run python manage.py makemigrations
+	uv run python manage.py migrate
 
 collect:
 	uv run python manage.py collectstatic --noinput

@@ -9,7 +9,6 @@ import logging
 from ..services.access_token_service import SocialAuthService
 from ..services.access_token_service import TokenRefreshService
 
-
 logger = logging.getLogger('prod')
 
 
@@ -21,7 +20,8 @@ class AccessTokenObtainView(APIView):
         return super().dispatch(*args, **kwargs)
 
     def get(self, request):
-        provider = request.session.get('provider', None)
+        logger.info(f"🎈🎈🎈🎈AccessTokenObtainView GET 요청 처리 {request.session.get('provider', '없음 ㅅㄱ')}")
+        provider = request.session.get('provider', 'google')
 
         if not provider:
             logger.error("세션에 제공자를 찾을 수 없습니다. 사용자가 소셜 계정으로 로그인하지 않았을 수 있습니다.")
@@ -30,17 +30,21 @@ class AccessTokenObtainView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        request.session.pop('provider')
+        # KeyError 방지: 기본값 None 지정
+        request.session.pop('provider', None)
 
         user = request.user
 
         try:
+            logger.info(
+                f"유저 {getattr(user, 'username', None)} ({getattr(user, 'id', None)})의 소셜 계정으로 JWT 발급 시도 시작. 제공자: {provider}")
             response_data, cookie_settings = SocialAuthService.obtain_jwt_for_social_user(
                 user, provider)
 
             response = Response(response_data, status=status.HTTP_200_OK)
             response.set_cookie(**cookie_settings)
-            logger.info(f"성공적으로 JWT 응답 및 쿠키 설정 완료 (사용자 ID: {user.id})")
+            logger.info(
+                f"성공적으로 JWT 응답 및 쿠키 설정 완료 (사용자 ID: {getattr(user, 'id', None)})")
             return response
 
         except ValueError as e:
@@ -48,7 +52,7 @@ class AccessTokenObtainView(APIView):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             logger.critical(
-                f"예상치 못한 심각한 오류 발생 (유저 ID: {user.id}): {e}", exc_info=True)
+                f"예상치 못한 심각한 오류 발생 (유저 ID: {getattr(user, 'id', None)}): {e}", exc_info=True)
             return Response({"error": "내부 서버 오류가 발생했습니다."}, status=status.HTTP_500_INTERNAL_ERROR)
 
 
@@ -59,7 +63,7 @@ class AccessTokenRefreshView(TokenRefreshView):
         if refresh_token_from_cookie is None:
             logger.warning("쿠키에서 리프레시 토큰을 찾을 수 없습니다. 토큰 갱신 시도 실패.")
             return Response(
-                {"detail": "쿠키에서 리프re시 토큰을 찾을 수 없습니다."},
+                {"detail": "쿠키에서 리프레시 토큰을 찾을 수 없습니다."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

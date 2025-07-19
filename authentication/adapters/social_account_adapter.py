@@ -1,7 +1,7 @@
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('prod')
 
 
 class SocialAccountAdapter(DefaultSocialAccountAdapter):

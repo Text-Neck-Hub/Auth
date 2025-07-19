@@ -1,110 +1,13 @@
+
 import os
 
-import logging
 from pathlib import Path
-from datetime import timedelta
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = True
-ALLOWED_HOSTS = ["*"]
 
-
-class ColoredFormatter(logging.Formatter):
-    COLORS = {
-        "DEBUG": "\033[94m",
-        "INFO": "\033[92m",
-        "WARNING": "\033[93m",
-        "ERROR": "\033[91m",
-        "CRITICAL": "\033[41m",
-    }
-    RESET = "\033[0m"
-
-    def format(self, record):
-        log_color = self.COLORS.get(record.levelname, self.RESET)
-        message = super().format(record)
-        return f"{log_color}{message}{self.RESET}"
-
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-
-    "formatters": {
-        "colored": {
-            "()": ColoredFormatter,
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
-        "simple": {
-            "format": "{levelname} {message}",
-            "style": "{",
-        },
-    },
-
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "colored",
-            "level": "DEBUG",
-        },
-        "file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join('/app/logs', 'debug.log'),
-            "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 5,
-            "formatter": "verbose",
-            "level": "DEBUG",
-        },
-        "error_file": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join('/app/logs', 'error.log'),
-            "maxBytes": 1024 * 1024 * 5,
-            "backupCount": 5,
-            "formatter": "verbose",
-            "level": "ERROR",
-        },
-    },
-
-    "loggers": {
-        "prod": {
-            "handlers": ["console", "file", "error_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django": {
-            "handlers": ["console", "file", "error_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        "django.request": {
-            "handlers": ["console", "error_file"],
-            "level": "INFO",
-            "propagate": False,
-        },
-        'allauth': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'django_prometheus': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        "": {
-            "handlers": ["console", "file"],
-            "level": "WARNING",
-            "propagate": False,
-        },
-    },
-}
 
 VANILA_APPS = [
     'django.contrib.admin',
@@ -125,7 +28,6 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'allauth.socialaccount.providers.kakao',
     'channels'
 ]
 
@@ -166,13 +68,6 @@ TEMPLATES = [
 ASGI_APPLICATION = 'config.asgi.application'
 WSGI_APPLICATION = 'config.wsgi.application'
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django_prometheus.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -202,57 +97,6 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     )
-}
-
-SIMPLE_JWT = {
-
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 5))),
-
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 1))),
-
-
-    'ROTATE_REFRESH_TOKENS': os.environ.get('JWT_ROTATE_REFRESH_TOKENS', 'True').lower() == 'true',
-
-    'BLACKLIST_AFTER_ROTATION': os.environ.get('JWT_BLACKLIST_AFTER_ROTATION', 'True').lower() == 'true',
-    'UPDATE_LAST_LOGIN': False,
-
-
-    'ALGORITHM': os.environ.get('JWT_ALGORITHM', 'HS256'),
-
-    'SIGNING_KEY': SECRET_KEY,
-    'VERIFYING_KEY': None,
-
-
-    'AUDIENCE': os.environ.get('JWT_AUDIENCE', None),
-    'ISSUER': os.environ.get('JWT_ISSUER', None),
-    'JWK_URL': None,
-    'LEEWAY': 0,
-
-
-    'AUTH_HEADER_TYPES': (os.environ.get('JWT_AUTH_HEADER_TYPE', 'Bearer'),),
-    'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-
-
-    'USER_ID_CLAIM': os.environ.get('JWT_USER_ID_CLAIM', 'user_id'),
-
-    'USER_ID_FIELD': os.environ.get('JWT_USER_ID_FIELD', 'id'),
-
-
-    'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
-
-
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
-
-    'TOKEN_TYPE_CLAIM': 'token_type',
-
-    'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
-
-
-    'JTI_CLAIM': os.environ.get('JWT_JTI_CLAIM', 'jti'),
-
-
-    'SLIDING_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_SLIDING_TOKEN_LIFETIME_MINUTES', 5))),
-    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=int(os.environ.get('JWT_SLIDING_TOKEN_REFRESH_LIFETIME_DAYS', 1))),
 }
 
 SOCIALACCOUNT_PROVIDERS = {
@@ -295,4 +139,5 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
     }
+
 }
