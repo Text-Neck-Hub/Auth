@@ -124,10 +124,13 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/'
-STATIC_ROOT = '/app/collected_static_auth/'
-MEDIA_URL = '/media/'
-MEDIA_ROOT = '/app/uploaded_media_auth/'
+STATIC_URL = '/static/auth/'  
+STATIC_ROOT = '/data/static/' 
+
+
+MEDIA_URL = '/media/auth/'
+MEDIA_ROOT = '/data/media/'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 

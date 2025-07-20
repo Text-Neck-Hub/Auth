@@ -14,8 +14,7 @@ DATABASES = {
     'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600)
 }
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 LOGIN_REDIRECT_URL = 'https://www.textneckhub.p-e.kr/auth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
