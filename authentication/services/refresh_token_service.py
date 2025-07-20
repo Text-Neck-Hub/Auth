@@ -1,5 +1,3 @@
-
-
 import logging
 from django.core.cache import cache
 from rest_framework_simplejwt.tokens import RefreshToken

@@ -20,26 +20,14 @@ class AccessTokenObtainView(APIView):
         return super().dispatch(*args, **kwargs)
 
     def get(self, request):
-        logger.info(f"🎈🎈🎈🎈AccessTokenObtainView GET 요청 처리 {request.session.get('provider', '없음 ㅅㄱ')}")
-        provider = request.session.get('provider', 'google')
-
-        if not provider:
-            logger.error("세션에 제공자를 찾을 수 없습니다. 사용자가 소셜 계정으로 로그인하지 않았을 수 있습니다.")
-            return Response(
-                {"error": "세션에 제공자를 찾을 수 없습니다. 소셜 계정으로 로그인해주세요."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # KeyError 방지: 기본값 None 지정
-        request.session.pop('provider', None)
 
         user = request.user
 
         try:
             logger.info(
-                f"유저 {getattr(user, 'username', None)} ({getattr(user, 'id', None)})의 소셜 계정으로 JWT 발급 시도 시작. 제공자: {provider}")
+                f"유저 {getattr(user, 'username', None)} ({getattr(user, 'id', None)})의 소셜 계정으로 JWT 발급 시도 시작.")
             response_data, cookie_settings = SocialAuthService.obtain_jwt_for_social_user(
-                user, provider)
+                user)
 
             response = Response(response_data, status=status.HTTP_200_OK)
             response.set_cookie(**cookie_settings)

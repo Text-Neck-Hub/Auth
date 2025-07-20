@@ -1,4 +1,3 @@
-
 from django.core.cache import cache
 from allauth.socialaccount.models import SocialAccount
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -13,11 +12,14 @@ User = get_user_model()
 
 
 class SocialAuthService:
+    
     @staticmethod
-    def obtain_jwt_for_social_user(user, provider):
-        logger.info(
-            f"유저 {user.username} ({user.id})의 소셜 계정으로 JWT 발급 시도 시작. 제공자: {provider}")
-
+    def obtain_jwt_for_social_user(user):
+        providers = {'kakao': 'kakao', 'naver': 'naver', 'gmail': 'google'}
+        logger.info(f"소셜 로그인 사용자 {user}의 JWT 발급 시작.")
+        logger.info(f"소셜 로그인 사용자 {user} ({user.email.split('@')[1].split('.')[0]})의 JWT 발급 시작.")
+        provider = providers.get(user.email.split('@')[1].split('.')[0], None)
+        logger.info(f"소셜 로그인 제공자: {provider}")
         social_account = SocialAccount.objects.filter(
             user=user, provider=provider).first()
 

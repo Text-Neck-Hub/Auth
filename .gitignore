@@ -200,3 +200,4 @@ uploaded_media_auth/
 .venv/
 db.sqlite3
 static/
+media/
