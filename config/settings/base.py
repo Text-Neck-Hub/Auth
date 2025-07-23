@@ -28,7 +28,9 @@ THIRD_PARTY_APPS = [
     'allauth.account',
     'allauth.socialaccount',
     'allauth.socialaccount.providers.google',
-    'channels'
+    'channels',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist'
 ]
 
 LOCAL_APPS = ['authentication']
@@ -124,8 +126,8 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-STATIC_URL = '/static/auth/'  
-STATIC_ROOT = '/data/static/' 
+STATIC_URL = '/static/auth/'
+STATIC_ROOT = '/data/static/'
 
 
 MEDIA_URL = '/media/auth/'

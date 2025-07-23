@@ -1,4 +1,5 @@
 from ..models import UserProfile
+from allauth.socialaccount.models import SocialAccount
 import logging
 
 logger = logging.getLogger('prod')
@@ -6,10 +7,21 @@ logger = logging.getLogger('prod')
 
 class UserProfileService:
     @staticmethod
-    def get_user_profile_data(profile_instance: UserProfile):
+    def get_user_profile_data(profile_instance):
         logger.info(
             f"프로필 데이터 조회 서비스 호출됨: 프로필 ID {profile_instance.id}, 유저 ID {profile_instance.user.id}")
-        return profile_instance
+
+        social_account = SocialAccount.objects.filter(
+            user=profile_instance.user
+        ).first()
+
+        if social_account:
+            return social_account.uid
+        else:
+            logger.warning(
+                f"유저 {profile_instance.user.id}에 연결된 소셜 계정을 찾을 수 없습니다. (프로필 ID: {profile_instance.id})"
+            )
+            return None
 
     @staticmethod
     def update_user_profile(profile_instance: UserProfile, validated_data: dict):

@@ -39,7 +39,6 @@ class UserProfileView(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        UserProfileService.get_user_profile_data(instance)
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 

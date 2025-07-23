@@ -4,6 +4,7 @@ from datetime import timedelta
 SECRET_KEY = os.environ.get('SECRET_KEY')
 
 SIMPLE_JWT = {
+    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=int(os.environ.get('JWT_ACCESS_TOKEN_LIFETIME_MINUTES', 5))),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=int(os.environ.get('JWT_REFRESH_TOKEN_LIFETIME_DAYS', 1))),
     'ROTATE_REFRESH_TOKENS': os.environ.get('JWT_ROTATE_REFRESH_TOKENS', 'True').lower() == 'true',
@@ -21,7 +22,7 @@ SIMPLE_JWT = {
     'USER_ID_CLAIM': os.environ.get('JWT_USER_ID_CLAIM', 'user_id'),
     'USER_ID_FIELD': os.environ.get('JWT_USER_ID_FIELD', 'id'),
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
-    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+
     'TOKEN_TYPE_CLAIM': 'token_type',
     'TOKEN_USER_CLASS': 'rest_framework_simplejwt.models.TokenUser',
     'JTI_CLAIM': os.environ.get('JWT_JTI_CLAIM', 'jti'),
