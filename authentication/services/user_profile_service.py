@@ -43,8 +43,10 @@ import logging
 from django.conf import settings
 from ..models import UserProfile
 from allauth.socialaccount.models import SocialAccount
-
+from django.contrib.auth import get_user_model
 logger = logging.getLogger('prod')
+
+User = get_user_model()
 
 
 class UserProfileService:
@@ -54,7 +56,8 @@ class UserProfileService:
         logger.info(
             f"프로필 데이터 조회 서비스: 프로필 ID={profile_instance.id}, 유저 ID={profile_instance.user.id}"
         )
-        social = SocialAccount.objects.filter(user=profile_instance.user).first()
+        social = SocialAccount.objects.filter(
+            user=profile_instance.user).first()
         if social:
             return social.uid
         logger.warning(
@@ -106,6 +109,6 @@ class UserProfileService:
             except Exception as e:
                 logger.error(f"프로필 이미지 삭제 중 오류: {e}")
 
-        # DB 레코드 삭제
-        profile_instance.delete()
+        User.objects.filter(id=profile_instance.user.id).delete()
+
         logger.info(f"프로필 레코드 삭제 완료: 프로필 ID={profile_instance.id}")
