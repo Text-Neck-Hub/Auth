@@ -22,13 +22,13 @@ class UserProfileView(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsOwnerOrReadOnly]
 
     def get_queryset(self):
-        if self.action in ['retrieve', 'partial_update', 'destroy'] and 'pk' not in self.kwargs:
+        if self.action in ['retrieve', 'update', 'destroy'] and 'pk' not in self.kwargs:
             return UserProfile.objects.filter(user=self.request.user)
         return super().get_queryset()
 
     def get_object(self):
         obj = None
-        if self.action in ['retrieve', 'partial_update', 'destroy'] and 'pk' not in self.kwargs:
+        if self.action in ['retrieve', 'update', 'destroy'] and 'pk' not in self.kwargs:
             obj = self.get_queryset().first()
             if not obj:
                 obj = UserProfile.objects.create(user=self.request.user)
@@ -42,9 +42,18 @@ class UserProfileView(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance)
         return Response(serializer.data)
 
-    def perform_update(self, serializer):
-        UserProfileService.update_user_profile(
-            serializer.instance, serializer.validated_data)
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(
+            instance, data=request.data, partial=False)
+        serializer.is_valid(raise_exception=True)
 
-    def perform_destroy(self, instance):
+        UserProfileService.update_user_profile(
+            instance, serializer.validated_data)
+
+        return Response(serializer.data)
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
         UserProfileService.delete_user_profile(instance)
+        return Response(status=status.HTTP_204_NO_CONTENT)
