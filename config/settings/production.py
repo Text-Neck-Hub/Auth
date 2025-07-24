@@ -15,7 +15,6 @@ DATABASES = {
 }
 
 
-
 LOGIN_REDIRECT_URL = 'https://www.textneckhub.p-e.kr/auth/callback/'
 SOCIALACCOUNT_LOGIN_ON_GET = True
 SOCIALACCOUNT_AUTO_SIGNUP = True

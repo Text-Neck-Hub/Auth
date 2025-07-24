@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from ..models import UserProfile
 from ..serializers.user_profile_serializer import UserProfileSerializer
 from ..services.user_profile_service import UserProfileService
+from ..utils.cache import CacheAside
 
 import logging
 
@@ -26,34 +27,40 @@ class UserProfileView(viewsets.ModelViewSet):
             return UserProfile.objects.filter(user=self.request.user)
         return super().get_queryset()
 
-    def get_object(self):
-        obj = None
-        if self.action in ['retrieve', 'update', 'destroy'] and 'pk' not in self.kwargs:
-            obj = self.get_queryset().first()
-            if not obj:
-                obj = UserProfile.objects.create(user=self.request.user)
+    def get_object(self, is_get=False):
+        user_id = self.request.user.id
+        cached_data = CacheAside.get(user_id)
+        if cached_data and is_get:
+            logger.info(f"캐시 get_object 히트: user_profile:{user_id}")
+            return cached_data
         else:
-            obj = super().get_object()
-        self.check_object_permissions(self.request, obj)
+            if not (obj := self.get_queryset().first()):
+                obj = UserProfile.objects.create(user=self.request.user)
+            self.check_object_permissions(self.request, obj)
+        if is_get:
+            serializer = self.get_serializer(obj)
+            CacheAside.set(user_id, serializer.data)
+            return serializer.data
         return obj
 
     def retrieve(self, request, *args, **kwargs):
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
+        user_profile = self.get_object(is_get=True)
+        return Response(user_profile)
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        serializer = self.get_serializer(
-            instance, data=request.data, partial=False)
+        serializer = self.get_serializer(instance, data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        UserProfileService.update_user_profile(
+        updated = UserProfileService.update_user_profile(
             instance, serializer.validated_data)
-
-        return Response(serializer.data)
+        updated_serializer = self.get_serializer(updated)
+        CacheAside.set(request.user.id, updated_serializer.data)
+        return Response(updated_serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        UserProfileService.delete_user_profile(instance)
+        CacheAside.delete(request.user.id)
+        UserProfileService.delete_user_profile(
+            profile_instance=instance, user_id=request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
