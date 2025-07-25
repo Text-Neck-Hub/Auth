@@ -69,10 +69,9 @@ class UserProfileService:
                     logger.info(f"프로필 이미지 파일 삭제됨: {path}")
             except Exception as e:
                 logger.error(f"프로필 이미지 삭제 중 오류: {e}")
+            finally:
 
-            profile_instance.profile_picture.delete(save=False)
-            profile_instance.delete()
-            User.objects.filter(id=user_id).delete()
+                User.objects.filter(id=user_id).delete()
 
             logger.info(
                 f"✅ 프로필/유저 삭제 완료 - 프로필 ID={profile_instance.id}, 유저 ID={user_id}")

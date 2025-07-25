@@ -2,22 +2,16 @@ from rest_framework.response import Response
 from rest_framework import status, permissions
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenRefreshView
-from django.contrib.auth.decorators import login_required
-from django.utils.decorators import method_decorator
 import logging
 from ..serializers.refresh_token_serializer import CookieTokenRefreshSerializer
 from ..services.access_token_service import SocialAuthService
 from ..services.access_token_service import TokenRefreshService
-
+from django.contrib.auth import logout
 logger = logging.getLogger('prod')
 
 
 class AccessTokenObtainView(APIView):
     permission_classes = [permissions.AllowAny]
-
-    @method_decorator(login_required)
-    def dispatch(self, *args, **kwargs):
-        return super().dispatch(*args, **kwargs)
 
     def get(self, request):
         user = request.user
@@ -43,6 +37,9 @@ class AccessTokenObtainView(APIView):
                 f"Unexpected error for user {user.id}: {e}", exc_info=True)
             return Response({'error': '내부 서버 오류가 발생했습니다.'},
                             status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        finally:
+            logout(request)
+            logger.info(f"User {user.id} logged out after token issuance.")
 
 
 class AccessTokenRefreshView(TokenRefreshView):
