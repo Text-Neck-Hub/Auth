@@ -1,6 +1,7 @@
 
 import os
 
+
 from pathlib import Path
 
 REDIS_HOST = os.environ.get('REDIS_HOST', 'redis')
