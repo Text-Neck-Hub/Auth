@@ -4,7 +4,7 @@ from ..models import UserProfile
 from ..serializers.user_profile_serializer import UserProfileSerializer
 from ..services.user_profile_service import UserProfileService
 from ..utils.cache import CacheAside
-
+from ..services.refresh_token_service import RevokeTokenService
 import logging
 
 logger = logging.getLogger('prod')
@@ -60,7 +60,16 @@ class UserProfileView(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
+        refresh_token_value = request.COOKIES.get('refresh_token')
         CacheAside.delete(request.user.id)
+        RevokeTokenService.revoke_refresh_token(
+            refresh_token_value, request.user.id)
+
+        response = Response(
+            {"message": "리프레시 토큰이 성공적으로 무효화되었습니다."},
+            status=status.HTTP_200_OK
+        )
+        response.delete_cookie('refresh_token')
         UserProfileService.delete_user_profile(
             profile_instance=instance, user_id=request.user.id)
         return Response(status=status.HTTP_204_NO_CONTENT)
