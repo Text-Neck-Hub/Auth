@@ -13,4 +13,5 @@ include(
     'jwt.py',
     'logging.py',
     'production.py',
+    'kafka.py',
 )

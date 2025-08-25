@@ -3,8 +3,11 @@ from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from allauth.account.signals import user_signed_up, user_logged_in
+from allauth.account.signals import user_signed_up
 from ..models import UserProfile
+from ..serializers.user_profile_serializer import UserProfileSerializer
+from ..clients.kafka_client import KafkaClient
+from django.conf import settings
 import logging
 
 logger = logging.getLogger("prod")
@@ -69,6 +72,19 @@ def populate_user_profile_on_signup(request, user, **kwargs):
             logger.debug(f"소셜 이메일로 프로필 이메일 업데이트됨: {profile.email}")
 
     profile.save()
+    serializer = UserProfileSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.data
+
+    topic = request.query_params.get("topic", getattr(
+        settings, "KAFKA_DEFAULT_TOPIC", "user-profile"))
+    key = data.get("user_id")
+    headers = {
+        "content-type": "application/json",
+        "schema": "user-profile-v1",
+    }
+
+    KafkaClient.send(topic=topic, key=key, value=data, headers=headers)
     logger.info(f"UserProfile 저장 완료: 유저 ID {user.id}")
 
 
