@@ -50,6 +50,7 @@ class KafkaClient:
         value: Dict[str, Any],
         headers: Optional[Dict[str, Any]] = None,
     ):
+        logger.debug("[KAFKA][SEND] topic=%s key=%s", topic, key)
         if not getattr(settings, "KAFKA_ENABLED", True):
             logger.debug("[KAFKA][SKIP] disabled. topic=%s key=%s", topic, key)
             return

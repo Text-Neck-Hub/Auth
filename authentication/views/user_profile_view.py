@@ -28,6 +28,8 @@ class UserProfileView(viewsets.ModelViewSet):
         return super().get_queryset()
 
     def get_object(self, is_get=False):
+        logger.info(
+            f"get_object 호출: is_get={is_get}, user={self.get_queryset().first().name}")
         user_id = self.request.user.id
         cached_data = CacheAside.get(user_id)
         if cached_data and is_get:

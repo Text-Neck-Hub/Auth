@@ -1,6 +1,9 @@
-
 import os
 import logging
+
+
+LOG_DIR = "/app/logs"
+os.makedirs(LOG_DIR, exist_ok=True)
 
 
 class ColoredFormatter(logging.Formatter):
@@ -45,31 +48,35 @@ LOGGING = {
         },
         "file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join('/app/logs', 'debug.log'),
+            "filename": os.path.join(LOG_DIR, "debug.log"),
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "verbose",
             "level": "DEBUG",
+            "encoding": "utf-8",
         },
         "error_file": {
             "class": "logging.handlers.RotatingFileHandler",
-            "filename": os.path.join('/app/logs', 'error.log'),
+            "filename": os.path.join(LOG_DIR, "error.log"),
             "maxBytes": 1024 * 1024 * 5,
             "backupCount": 5,
             "formatter": "verbose",
             "level": "ERROR",
+            "encoding": "utf-8",
         },
     },
     "loggers": {
+
         "prod": {
             "handlers": ["console", "file", "error_file"],
             "level": "DEBUG",
-            "propagate": True,
+            "propagate": False,
         },
+
         "": {
-            "handlers": ["console", "file", "error_file"],
-            "level": "DEBUG",
-            "propagate": True,
+            "handlers": ["console"],
+            "level": "WARNING",
+            "propagate": False,
         },
     },
 }

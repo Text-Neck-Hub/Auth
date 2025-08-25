@@ -3,7 +3,7 @@ from django.core.files import File
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.contrib.auth import get_user_model
-from allauth.account.signals import user_signed_up
+from allauth.account.signals import user_signed_up, user_logged_in
 from ..models import UserProfile
 from ..serializers.user_profile_serializer import UserProfileSerializer
 from ..clients.kafka_client import KafkaClient
@@ -39,6 +39,7 @@ def populate_user_profile_on_signup(request, user, **kwargs):
         for profile_image_key in ['picture', 'profile_image', 'image_url']:
             if profile_image_key in extra_data:
                 social_image_url = extra_data[profile_image_key]
+                logger.debug(f"소셜 프로필 이미지 URL 발견: {social_image_url}")
                 break
 
         if social_image_url:
@@ -72,12 +73,11 @@ def populate_user_profile_on_signup(request, user, **kwargs):
             logger.debug(f"소셜 이메일로 프로필 이메일 업데이트됨: {profile.email}")
 
     profile.save()
-    serializer = UserProfileSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
+    serializer = UserProfileSerializer(instance=profile)
+
     data = serializer.data
 
-    topic = request.query_params.get("topic", getattr(
-        settings, "KAFKA_DEFAULT_TOPIC", "user-profile"))
+    topic = settings.KAFKA_DEFAULT_TOPIC
     key = data.get("user_id")
     headers = {
         "content-type": "application/json",
@@ -88,14 +88,14 @@ def populate_user_profile_on_signup(request, user, **kwargs):
     logger.info(f"UserProfile 저장 완료: 유저 ID {user.id}")
 
 
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, created, **kwargs):
-    logger.debug(f"User 모델 저장 시그널 발생: 유저 ID {instance.id}")
-    if created:
-        UserProfile.objects.get_or_create(user=instance)
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
-        logger.debug(f"연결된 UserProfile 저장됨: 유저 ID {instance.id}")
-    else:
-        logger.warning(
-            f"User ID {instance.id} 에 연결된 UserProfile이 없습니다. 초기 UserProfile 생성이 누락되었을 수 있습니다.")
+# @receiver(post_save, sender=User)
+# def save_user_profile(sender, instance, created, **kwargs):
+#     logger.debug(f"User 모델 저장 시그널 발생: 유저 ID {instance.id}")
+#     if created:
+#         UserProfile.objects.get_or_create(user=instance)
+#     if hasattr(instance, 'profile'):
+#         instance.profile.save()
+#         logger.debug(f"연결된 UserProfile 저장됨: 유저 ID {instance.id}")
+#     else:
+#         logger.warning(
+#             f"User ID {instance.id} 에 연결된 UserProfile이 없습니다. 초기 UserProfile 생성이 누락되었을 수 있습니다.")

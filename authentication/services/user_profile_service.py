@@ -74,4 +74,4 @@ class UserProfileService:
                 User.objects.filter(id=user_id).delete()
 
             logger.info(
-                f"✅ 프로필/유저 삭제 완료 - 프로필 ID={profile_instance.id}, 유저 ID={user_id}")
+                f" 프로필/유저 삭제 완료 - 프로필 ID={profile_instance.id}, 유저 ID={user_id}")
