@@ -86,16 +86,3 @@ def populate_user_profile_on_signup(request, user, **kwargs):
 
     KafkaClient.send(topic=topic, key=key, value=data, headers=headers)
     logger.info(f"UserProfile 저장 완료: 유저 ID {user.id}")
-
-
-# @receiver(post_save, sender=User)
-# def save_user_profile(sender, instance, created, **kwargs):
-#     logger.debug(f"User 모델 저장 시그널 발생: 유저 ID {instance.id}")
-#     if created:
-#         UserProfile.objects.get_or_create(user=instance)
-#     if hasattr(instance, 'profile'):
-#         instance.profile.save()
-#         logger.debug(f"연결된 UserProfile 저장됨: 유저 ID {instance.id}")
-#     else:
-#         logger.warning(
-#             f"User ID {instance.id} 에 연결된 UserProfile이 없습니다. 초기 UserProfile 생성이 누락되었을 수 있습니다.")
